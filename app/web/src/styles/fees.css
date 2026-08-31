@@ -1,0 +1,35 @@
+/* Checkout fee breakdown and minimum-order nudge. Scoped to Checkout.tsx
+   only, kept out of app.css per file-ownership rules for this change. */
+
+/* Items subtotal reuses .summary-line spacing but sits visually lighter
+   than the priced item rows above it, since it repeats a sum the customer
+   just read rather than naming something new. */
+.checkout-subtotal-row {
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding-top: var(--space-3);
+}
+
+/* Delivery and service fee rows: same rhythm as item lines so the whole
+   card reads as one honest list, nothing set apart or buried. */
+.checkout-fee-row {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.checkout-min-order-nudge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+  color: var(--warn);
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}

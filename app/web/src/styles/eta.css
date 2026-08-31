@@ -1,0 +1,15 @@
+/* Hard arrive-by deadline line, paired with the soft eta-pill above it.
+   Amazon and Uber Eats show both together: a rolling estimate plus a
+   separate promise the customer can hold the courier to. */
+.arrive-by-line {
+  margin-top: 6px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* Swaps in once the order lands so the deadline never reads as a stale promise. */
+.arrive-by-delivered {
+  color: var(--accent);
+}

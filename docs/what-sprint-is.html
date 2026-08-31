@@ -1,0 +1,243 @@
+<title>What Sprint Is</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&display=swap">
+<style>
+  :root {
+    --ink: #131311;
+    --ink-2: #1c1c19;
+    --bone: #F4F4F1;
+    --dim: #a3a39c;
+    --faint: #55554f;
+    --green: #3AAA35;
+    --green-dk: #2c8828;
+    --orange: #F7941D;
+    --line: #2a2a26;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ink);
+    color: var(--bone);
+    font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 660px; margin: 0 auto; padding: 0 22px; }
+  section { padding: 72px 0; border-bottom: 1px solid var(--line); }
+  .anton {
+    font-family: Anton, Impact, "Arial Narrow", sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+  .act {
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--green); font-weight: 800; margin-bottom: 18px;
+  }
+  h1 { font-size: clamp(44px, 9vw, 76px); }
+  h2.anton { font-size: clamp(30px, 6vw, 46px); margin-bottom: 22px; }
+  p.big { font-size: clamp(19px, 3vw, 22px); color: var(--bone); }
+  p { color: var(--dim); margin-bottom: 16px; max-width: 58ch; }
+  p strong { color: var(--bone); font-weight: 600; }
+  .g { color: var(--green); }
+  .o { color: var(--orange); }
+
+  /* hero */
+  .hero { padding: 88px 0 72px; border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: baseline; gap: 8px; margin-bottom: 54px; }
+  .brand .anton { font-size: 22px; font-style: italic; }
+  .brand .slash { color: var(--orange); }
+  .brand .tag { font-size: 12px; color: var(--faint); letter-spacing: 2px; text-transform: uppercase; }
+
+  /* graveyard */
+  .graves { display: flex; flex-direction: column; gap: 10px; margin: 28px 0; }
+  .grave {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+    background: var(--ink-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 18px;
+  }
+  .grave .who { font-weight: 800; color: var(--dim); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .grave .what { font-size: 13.5px; color: var(--faint); text-align: right; }
+
+  /* chat */
+  .chat { display: flex; flex-direction: column; gap: 10px; margin: 30px 0; }
+  .bubble {
+    max-width: 82%; padding: 12px 16px; border-radius: 16px;
+    font-size: 15.5px; line-height: 1.45;
+  }
+  .from-them { background: var(--ink-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; align-self: flex-start; }
+  .from-us { background: #14401a; border: 1px solid #1e5a26; border-bottom-right-radius: 4px; align-self: flex-end; }
+  .bubble .meta { display: block; font-size: 11px; color: var(--faint); margin-top: 6px; }
+  .card-in-chat {
+    align-self: flex-end; background: var(--ink-2); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 18px; max-width: 82%;
+  }
+  .card-in-chat .shop { font-weight: 800; font-size: 15px; }
+  .card-in-chat .sum { color: var(--dim); font-size: 14px; margin: 4px 0 10px; }
+  .chip {
+    display: inline-block; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--green); color: var(--green);
+    border-radius: 999px; padding: 4px 13px; margin-right: 6px;
+  }
+  .chip.solid { background: var(--green); color: #0b120a; }
+
+  /* the machine steps */
+  .flow { display: flex; flex-direction: column; gap: 0; margin-top: 30px; }
+  .step { display: grid; grid-template-columns: 44px 1fr; gap: 0 18px; }
+  .dot {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--green); color: #0b120a;
+    display: flex; align-items: center; justify-content: center;
+    font-family: Anton, Impact, sans-serif; font-size: 16px;
+  }
+  .rail { width: 2px; flex: 1; background: var(--line); margin: 6px auto; min-height: 26px; }
+  .stem { display: flex; flex-direction: column; align-items: center; }
+  .step .body { padding-bottom: 26px; }
+  .step h3 { font-size: 18px; margin: 5px 0 6px; letter-spacing: -0.2px; }
+  .step p { font-size: 15.5px; margin-bottom: 0; }
+
+  /* money */
+  .splitrow { display: flex; flex-direction: column; gap: 10px; margin: 26px 0 8px; }
+  .money {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-left: 4px solid var(--green); background: var(--ink-2);
+    border-radius: 8px; padding: 13px 18px;
+  }
+  .money.sprint { border-left-color: var(--orange); }
+  .money .amt { font-family: Anton, Impact, sans-serif; font-size: 24px; letter-spacing: 0.5px; }
+  .money .who { color: var(--dim); font-size: 14px; }
+  .foot-note { font-size: 13.5px; color: var(--faint); }
+
+  /* doors */
+  .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 28px; }
+  .door { background: var(--ink-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .door .lead-door { font-weight: 800; font-size: 15px; }
+  .door .sub { font-size: 13px; color: var(--faint); margin-top: 3px; }
+  .door.main { grid-column: 1 / -1; border-color: var(--green-dk); background: #14260f; }
+  .door.main .lead-door { color: var(--green); }
+  @media (max-width: 520px) { .doors { grid-template-columns: 1fr; } }
+
+  /* why we live */
+  .fact { display: flex; gap: 16px; align-items: baseline; margin-bottom: 14px; }
+  .fact .num { font-family: Anton, Impact, sans-serif; font-size: 30px; color: var(--green); min-width: 118px; text-align: right; }
+  .fact .lbl { color: var(--dim); font-size: 15px; }
+
+  /* closing */
+  .close-line { font-size: clamp(24px, 5vw, 34px); margin: 8px 0 26px; }
+  .honest {
+    border: 1px dashed var(--faint); border-radius: 12px;
+    padding: 18px 20px; margin-top: 34px;
+  }
+  .honest .h { font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--orange); font-weight: 800; margin-bottom: 8px; }
+  .honest p { font-size: 14.5px; margin-bottom: 0; }
+  footer { padding: 40px 0 60px; }
+  footer .anton { font-size: 20px; font-style: italic; }
+  footer .small { font-size: 12.5px; color: var(--faint); margin-top: 6px; }
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="brand">
+      <span class="anton">SPRINT<span class="slash">/</span></span>
+      <span class="tag">what it is, in one story</span>
+    </div>
+    <h1 class="anton">The delivery apps<br>are <span style="color:var(--faint)">dying</span>.<br>Sprint is <span class="g">not one</span>.</h1>
+  </div>
+
+  <section>
+    <div class="act">Part 1 · What just happened to delivery apps</div>
+    <h2 class="anton">Africa's app graveyard</h2>
+    <p class="big">The big consumer delivery apps spent millions and still lost money on nearly every order.</p>
+    <div class="graves">
+      <div class="grave"><span class="who">Jumia Food</span><span class="what">closed in 7 countries, Dec 2023</span></div>
+      <div class="grave"><span class="who">Bolt Food</span><span class="what">left Nigeria and South Africa</span></div>
+      <div class="grave"><span class="who">Glovo</span><span class="what">left Ghana after 3 years</span></div>
+      <div class="grave"><span class="who">GoLemon</span><span class="what">Lagos groceries, gone 2026</span></div>
+    </div>
+    <p>The reason is simple. Winning one app customer costs around <strong>P900 in marketing</strong>, and they need about <strong>15 orders</strong> before you break even. In a mid-size city, most people never get there, because nobody wants to download another app for bread.</p>
+  </section>
+
+  <section>
+    <div class="act">Part 2 · Where people actually order</div>
+    <h2 class="anton">People don't download.<br>They text.</h2>
+    <div class="chat">
+      <div class="bubble from-them">2 loaves and milk to Block 8 please 🙏</div>
+      <div class="card-in-chat">
+        <div class="shop">Thato's Bakery</div>
+        <div class="sum">P57 total · delivered in 25 min</div>
+        <span class="chip solid">Pay with Orange Money</span><span class="chip">Cash</span>
+      </div>
+      <div class="bubble from-us">Paid ✓ Your rider is on the way. Track him live here.<span class="meta">Sprint · order card</span></div>
+    </div>
+    <p>More than <strong>9 in 10 internet users</strong> in Southern Africa are on WhatsApp already. Pick n Pay Botswana takes orders there today. In Kenya, whole platforms run 35,000 shops inside WhatsApp. This is where commerce moved while everyone was building apps.</p>
+  </section>
+
+  <section>
+    <div class="act">Part 3 · What Sprint actually does</div>
+    <h2 class="anton">One engine behind<br>every way to order</h2>
+    <p class="big">Sprint catches the order wherever it happens, and a real rider makes it real.</p>
+    <div class="flow">
+      <div class="step">
+        <div class="stem"><div class="dot">1</div><div class="rail"></div></div>
+        <div class="body"><h3>An order comes in</h3><p>The customer orders in WhatsApp, on your website, on Sprint's web shop, or through a company account. However they order, it lands with you the same way.</p></div>
+      </div>
+      <div class="step">
+        <div class="stem"><div class="dot">2</div><div class="rail"></div></div>
+        <div class="body"><h3>You tap Accept, on the phone you already have</h3><p>An alert pings your existing phone or till the second a customer orders. No new hardware, no dashboard to learn. One tap, and the payout is already promised: <strong class="g">P42.75 to you on delivery.</strong></p></div>
+      </div>
+      <div class="step">
+        <div class="stem"><div class="dot">3</div><div class="rail"></div></div>
+        <div class="body"><h3>A Sprint rider collects and delivers</h3><p>A real rider from a real fleet, tracked door to door, so you never leave the counter and never chase a driver.</p></div>
+      </div>
+      <div class="step">
+        <div class="stem"><div class="dot">4</div></div>
+        <div class="body"><h3>The money splits itself</h3>
+          <div class="splitrow">
+            <div class="money"><span class="amt">P67.50</span><span class="who">to the shop</span></div>
+            <div class="money"><span class="amt">P16.20</span><span class="who">to the rider</span></div>
+            <div class="money sprint"><span class="amt o">P6.30</span><span class="who">to Sprint</span></div>
+          </div>
+          <p class="foot-note">A real P90 order. Nobody invoices anybody. Nobody chases anybody.</p>
+        </div>
+      </div>
+    </div>
+    <div class="doors">
+      <div class="door main"><div class="lead-door">WhatsApp ordering leads</div><div class="sub">because that is where Gaborone already is</div></div>
+      <div class="door"><div class="lead-door">Any shop's website</div><div class="sub">one green button, the shop keeps its customer</div></div>
+      <div class="door"><div class="lead-door">Corporate accounts</div><div class="sub">banks and offices, with proof of delivery</div></div>
+      <div class="door"><div class="lead-door">Web shop</div><div class="sub">no download, works on any phone</div></div>
+      <div class="door"><div class="lead-door">The Sprint app</div><div class="sub">one door among five, not the whole business</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="act">Part 4 · Why Sprint lives where they died</div>
+    <h2 class="anton">The fleet already exists</h2>
+    <p class="big">The dead apps had to build a fleet from nothing and buy every customer with borrowed money. Sprint starts from the other end.</p>
+    <div style="margin-top:26px">
+      <div class="fact"><div class="num">70,000+</div><div class="lbl">deliveries already moving every month through Sprint Couriers, with banks and government among the contracts</div></div>
+      <div class="fact"><div class="num">Since 2018</div><div class="lbl">the licensed courier the regulator's own annual report names the market leader, carrying most of Botswana's courier mail</div></div>
+      <div class="fact"><div class="num">Every order</div><div class="lbl">priced to profit on its own, the way Africa's surviving platforms do it, never subsidised to look busy</div></div>
+    </div>
+    <p style="margin-top:18px">The engine doesn't create a delivery company. It gives the one that already exists a way to catch the whole city's orders, in the places people already order.</p>
+  </section>
+
+  <section style="border-bottom:none">
+    <div class="act">Part 5 · So, in one sentence</div>
+    <p class="anton close-line">Sprint is the delivery engine powering Gaborone: order in WhatsApp or on any shop's website, watch a <span class="g">real rider</span> bring it, and the money <span class="o">splits itself</span>.</p>
+    <div class="honest">
+      <div class="h">What we still have to prove</div>
+      <p>Two honest items still being closed, flagged by our own review panel: the till alert is being made loud and simple enough that no order is ever missed on a buried phone, and the mobile money settlement terms behind the automatic split are being confirmed with Orange, Mascom and BTC. Both are on the board, neither is finished.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="anton">SPRINT<span style="color:var(--orange)">/</span></div>
+    <div class="small">Built for Gaborone. Moving with you. · Sources: Reuters and TechCrunch on Jumia Food; company statements from Bolt, Glovo, Pick n Pay Botswana; Meta; BOCRA Annual Report 2025.</div>
+  </footer>
+
+</div>

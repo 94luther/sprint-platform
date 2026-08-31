@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sprint, what it does</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+    color: #111111;
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm; height: 297mm;
+    padding: 14mm 14mm 10mm 14mm;
+    page-break-after: always;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; }
+
+  .top { display: flex; align-items: center; gap: 10px; margin-bottom: 7mm; }
+  .top img { height: 30px; }
+  .wordmark {
+    font-size: 25px; font-weight: 800; letter-spacing: -0.5px;
+    font-style: italic; transform: skewX(-8deg);
+  }
+  .slash { color: #F7941D; }
+  .kicker {
+    margin-left: auto; font-size: 10px; letter-spacing: 2.4px;
+    text-transform: uppercase; color: #6b6b6b; font-weight: 700;
+  }
+
+  h1 { font-size: 33px; line-height: 1.05; letter-spacing: -1px; margin-bottom: 4mm; }
+  h1 .g { color: #3AAA35; }
+  .lede { font-size: 13.5px; line-height: 1.55; color: #333; max-width: 165mm; margin-bottom: 7mm; }
+
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6mm; margin-bottom: 7mm; }
+  .step .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 21px; height: 21px; border-radius: 50%;
+    background: #3AAA35; color: #fff; font-size: 11px; font-weight: 800;
+    margin-bottom: 2.5mm;
+  }
+  .step h3 { font-size: 13.5px; margin-bottom: 1.5mm; letter-spacing: -0.2px; }
+  .step p { font-size: 10.5px; line-height: 1.45; color: #555; margin-bottom: 3mm; }
+  .shot {
+    width: 100%; height: 76mm;
+    object-fit: cover; object-position: top center;
+    border-radius: 7px; border: 1px solid #e2e2e2;
+    background: #111;
+  }
+
+  .band {
+    background: #111111; color: #F4F4F1;
+    border-radius: 10px; padding: 6mm 7mm; margin-top: auto;
+  }
+  .band h2 { font-size: 15px; margin-bottom: 4mm; letter-spacing: -0.2px; }
+  .split { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+  .split div { border-left: 3px solid #3AAA35; padding-left: 3.5mm; }
+  .split .amt { font-size: 21px; font-weight: 800; letter-spacing: -0.5px; }
+  .split .who { font-size: 10px; color: #b9b9b9; margin-top: 0.8mm; }
+  .split .orange { border-left-color: #F7941D; }
+  .band .foot { font-size: 9.5px; color: #9a9a9a; margin-top: 4mm; }
+
+  .ways { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4mm; margin-bottom: 7mm; }
+  .way { border: 1px solid #e4e4e4; border-radius: 9px; padding: 4.5mm 5mm; }
+  .way h3 { font-size: 13px; margin-bottom: 1.5mm; }
+  .way h3 span { color: #3AAA35; }
+  .way p { font-size: 10.5px; line-height: 1.45; color: #555; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 6mm; }
+  th, td { text-align: left; padding: 3mm 3mm; font-size: 10.5px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+  th { font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: #777; }
+  td.first { font-weight: 700; width: 34%; }
+  td.us { color: #1f7a1c; font-weight: 600; }
+
+  .proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin-bottom: 6mm; }
+  .proof div { background: #F4F4F1; border-radius: 8px; padding: 4mm 4.5mm; }
+  .proof .big { font-size: 19px; font-weight: 800; letter-spacing: -0.5px; }
+  .proof .lbl { font-size: 9.5px; color: #666; margin-top: 1mm; line-height: 1.35; }
+
+  .pagefoot {
+    position: absolute; left: 14mm; right: 14mm; bottom: 7mm;
+    display: flex; justify-content: space-between;
+    font-size: 8.5px; color: #999; letter-spacing: 0.4px;
+  }
+</style>
+</head>
+<body>
+
+<section class="page">
+  <div class="top">
+    <img src="logo-mark.png" alt="">
+    <span class="wordmark">SPRINT<span class="slash">/</span></span>
+    <span class="kicker">What it does</span>
+  </div>
+
+  <h1>Anything in Gaborone,<br>ordered and <span class="g">delivered</span>.</h1>
+  <p class="lede">
+    A customer orders from any shop in the city. Sprint picks the right rider in seconds,
+    the customer watches the trip on a live map, and when it lands the money splits itself
+    between the shop, the rider and Sprint. No phone calls, no haggling, no wondering where it is.
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>They order</h3>
+      <p>Every shop in one place, searchable, with real prices.</p>
+      <img class="shot" src="appdemo/catalog.png" alt="">
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>They pay</h3>
+      <p>Orange Money, MyZaka, Smega, card or cash. Fees shown first.</p>
+      <img class="shot" src="appdemo/payment.png" alt="">
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>A rider is chosen</h3>
+      <p>The system scores every nearby rider and picks the best one.</p>
+      <img class="shot" src="appdemo/ops.png" alt="">
+    </div>
+    <div class="step">
+      <div class="num">4</div>
+      <h3>They watch it come</h3>
+      <p>Live map, arrival time, and a call if it slips.</p>
+      <img class="shot" src="appdemo/tracking.png" alt="">
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:#666;text-align:center;margin-bottom:7mm;">
+    These are real screens from the working app, captured on a live order, not drawings.
+  </p>
+
+  <div class="band">
+    <h2>Then the money splits itself, on a P90 order</h2>
+    <div class="split">
+      <div><div class="amt">P67.50</div><div class="who">to the shop</div></div>
+      <div><div class="amt">P16.20</div><div class="who">to the rider</div></div>
+      <div class="orange"><div class="amt">P6.30</div><div class="who">to Sprint</div></div>
+    </div>
+    <p class="foot">Every thebe accounted for, on every single order, with no one chasing anyone for payment.</p>
+  </div>
+
+  <div class="pagefoot"><span>Sprint Couriers, Gaborone</span><span>Page 1 of 2</span></div>
+</section>
+
+<section class="page">
+  <div class="top">
+    <img src="logo-mark.png" alt="">
+    <span class="wordmark">SPRINT<span class="slash">/</span></span>
+    <span class="kicker">Why it wins</span>
+  </div>
+
+  <h1>Five ways in.<br>One <span class="g">delivery machine</span>.</h1>
+  <p class="lede">
+    The other apps give a customer one way to order, inside their app. Sprint takes the order
+    wherever the customer already is, and runs all of them on the same engine and the same riders.
+  </p>
+
+  <div class="ways">
+    <div class="way"><h3><span>1.</span> The Sprint app</h3><p>Our own marketplace. Every shop in Gaborone, one basket, one delivery.</p></div>
+    <div class="way"><h3><span>2.</span> The web shop</h3><p>The same thing in any browser, no download needed, works on any phone.</p></div>
+    <div class="way"><h3><span>3.</span> A button on the shop's own website</h3><p>The shop keeps its own customer and its own brand. Sprint just does the delivery.</p></div>
+    <div class="way"><h3><span>4.</span> Straight in WhatsApp</h3><p>The customer texts what they want. They get an order card, pay, and get a tracking link.</p></div>
+    <div class="way"><h3><span>5.</span> Corporate accounts</h3><p>Banks, pharmacies and offices book runs on account, with proof of delivery for every item.</p></div>
+    <div class="way"><h3><span>+</span> One engine behind all five</h3><p>Same riders, same tracking, same money rules, whichever door the order comes through.</p></div>
+  </div>
+
+  <table>
+    <tr><th>What matters</th><th>The other apps</th><th>Sprint</th></tr>
+    <tr><td class="first">Where you can order</td><td>Inside their app only</td><td class="us">App, web, the shop's own site, WhatsApp, corporate</td></tr>
+    <tr><td class="first">The shop's customer</td><td>Becomes the app's customer</td><td class="us">Stays the shop's customer</td></tr>
+    <tr><td class="first">Getting paid</td><td>Payouts on their schedule</td><td class="us">Splits automatically on every order</td></tr>
+    <tr><td class="first">The fleet</td><td>Riders signed up recently</td><td class="us">A licensed courier already moving parcels daily</td></tr>
+    <tr><td class="first">Business delivery</td><td>Food and groceries</td><td class="us">Food, groceries, pharmacy, parcels and corporate runs</td></tr>
+  </table>
+
+  <div class="proof">
+    <div><div class="big">48 seconds</div><div class="lbl">from order placed to delivered on the live test run</div></div>
+    <div><div class="big">5 rails</div><div class="lbl">Orange Money, MyZaka, Smega, card and cash</div></div>
+    <div><div class="big">Every thebe</div><div class="lbl">split and logged automatically, nothing manual</div></div>
+  </div>
+
+  <div class="band">
+    <h2>What this is, in one line</h2>
+    <p style="font-size:15px;line-height:1.5;">
+      Not another food app. A delivery machine the whole city can plug into,
+      built and run by the courier that already moves Botswana.
+    </p>
+    <p class="foot">Built for Gaborone. Moving with you.</p>
+  </div>
+
+  <div class="pagefoot"><span>Sprint Couriers, Gaborone</span><span>Page 2 of 2</span></div>
+</section>
+
+</body>
+</html>

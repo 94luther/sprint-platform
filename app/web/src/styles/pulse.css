@@ -28,6 +28,17 @@
 
   /* Stagger step between siblings entering together. */
   --stagger-step: 60ms;
+
+  /* Craft director's amendment pass ("THE PULSE, upgraded"):
+     two more named curves alongside the spring above, so every motion on
+     the app reaches for one of three deliberate feelings instead of a
+     generic ease. --ease-spring (already bouncy) doubles as the "physical
+     card" curve at a tighter 300ms; --ease-status-lock is new, a heavier,
+     no-overshoot curve for state changes that should read as settled fact
+     rather than a bouncy arrival. */
+  --dur-card-spring: 300ms;
+  --dur-status-lock: 400ms;
+  --ease-status-lock: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* ---------- Spring entrance ---------- */
@@ -52,6 +63,14 @@
    Track.tsx cards) instead of appearing instantly. */
 .pulse-enter {
   animation: pulseEnter var(--dur-spring) var(--ease-spring) both;
+  animation-delay: var(--pulse-delay, 0ms);
+}
+
+/* Physical cards (a rider, a delivery point, anything that reads as a real
+   object rather than a row of text) enter tighter and quicker than the
+   default spring, 300ms instead of 450ms, same bounce. */
+.pulse-enter-card {
+  animation: pulseEnter var(--dur-card-spring) var(--ease-spring) both;
   animation-delay: var(--pulse-delay, 0ms);
 }
 

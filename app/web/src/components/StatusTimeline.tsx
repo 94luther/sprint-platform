@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ORDER_STEPS, type OrderStatus, type TimelineEntry } from '../lib/types'
 
 export function timeLabel(at?: string) {
@@ -59,6 +60,29 @@ const HERO_CHECKPOINTS: { label: string; throughIndex: number }[] = [
   { label: 'Coming to you', throughIndex: ORDER_STEPS.findIndex((s) => s.status === 'delivered') }
 ]
 
+// Fixed, deterministic angle spread for the orange stamp burst a
+// completing checkpoint throws (Craft director's amendment). Not
+// Math.random for the same reason Track.tsx's other bursts are not: two
+// renders of the same completed checkpoint should look identical.
+const STAMP_ANGLES = [0, 60, 120, 180, 240, 300]
+
+// Small orange micro-burst, thrown by a checkpoint the instant it
+// completes. Purely decorative, hidden from assistive tech, positioned by
+// its .particle-burst wrapper filling the timeline-dot it sits inside.
+function CheckpointStampBurst() {
+  return (
+    <span className="particle-burst" aria-hidden="true">
+      {STAMP_ANGLES.map((angle, i) => (
+        <span
+          key={angle}
+          className="particle-dot orange"
+          style={{ '--angle': `${angle}deg`, animationDelay: `${i * 15}ms` } as CSSProperties}
+        />
+      ))}
+    </span>
+  )
+}
+
 export function HeroCheckpoints({
   status,
   burstIndex = null
@@ -90,10 +114,11 @@ export function HeroCheckpoints({
         const current = !done && i === firstPending
         const bursting = burstIndex === i
         return (
-          <div className="checkpoint" key={c.label}>
+          <div className={`checkpoint${bursting ? ' checkpoint-stamp' : ''}`} key={c.label}>
             {i > 0 && <div className={`checkpoint-connector${doneFlags[i - 1] ? ' done' : ''}`} />}
             <div className={`timeline-dot${done ? ' done' : ''}${current ? ' current' : ''}${bursting ? ' radial-burst' : ''}`}>
               {done ? <span className="check-draw">✓</span> : ''}
+              {bursting && <CheckpointStampBurst />}
             </div>
             <div className={`checkpoint-label${done ? ' reached' : ''}${current ? ' active' : ''}`}>
               {c.label}

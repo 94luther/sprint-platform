@@ -134,6 +134,27 @@ function CelebrationBurst() {
   )
 }
 
+// Craft director's amendment: delivered's geometric shard sweep. Four
+// angular green shards (within the director's 3 to 5 range), staggered
+// left starting positions and delays, crossing the top third of the
+// screen (see .delivered-shards, position:fixed, in eta.css) as the
+// transition into the "Delivered at HH:MM" banner. Purely decorative.
+const SHARD_LEFT_OFFSETS = [-10, 14, 38, 62]
+
+function DeliveredShards() {
+  return (
+    <div className="delivered-shards" aria-hidden="true">
+      {SHARD_LEFT_OFFSETS.map((left, i) => (
+        <span
+          key={left}
+          className="shard"
+          style={{ left: `${left}%`, animationDelay: `${i * 70}ms` } as CSSProperties}
+        />
+      ))}
+    </div>
+  )
+}
+
 // ---------------------------------------------------------------------
 // Delivery address: plot line plus a landmark line, split on the first
 // comma. "Plot 5419, Village, Gaborone" becomes "Plot 5419" over
@@ -213,6 +234,25 @@ export default function Track() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.id])
 
+  // Craft director's amendment, "first load strike": the arrival window
+  // never fades in (it carries no opacity/scale entrance at all, see
+  // .track-hero-window in eta.css), it just marks its one-time arrival
+  // with a brief green flash that settles to the resting bone colour.
+  // Guarded by a ref, not just state, so the 2s poll's refetch (a new
+  // order object, same id) never replays it, only the very first order
+  // load does.
+  const [strikeIn, setStrikeIn] = useState(false)
+  const hasStruckRef = useRef(false)
+
+  useEffect(() => {
+    if (!order || hasStruckRef.current) return
+    hasStruckRef.current = true
+    setStrikeIn(true)
+    const clearAt = window.setTimeout(() => setStrikeIn(false), 180)
+    return () => window.clearTimeout(clearAt)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order])
+
   // Status moments: every real status change coming off the socket earns a
   // hit-stop (a 120ms freeze-frame, see the .hitstop class) then releases
   // into a specific celebration for that transition. Purely a reaction to
@@ -267,7 +307,7 @@ export default function Track() {
 
   if (error) {
     return (
-      <div className="app-shell">
+      <div className="app-shell track-ground">
         <AppHeader />
         <div className="empty-state">
           <div className="glyph">⚠</div>
@@ -279,7 +319,7 @@ export default function Track() {
 
   if (!order || addressText == null) {
     return (
-      <div className="app-shell">
+      <div className="app-shell track-ground">
         <AppHeader />
         <main className="app-main" aria-label="Finding your order" aria-busy="true">
           <div className="skeleton-hero">
@@ -328,9 +368,10 @@ export default function Track() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell track-ground">
       <AppHeader />
-      <main className={`app-main${hitStop ? ' hitstop' : ''}`}>
+      {celebration === 'delivered' && <DeliveredShards />}
+      <main className={`app-main${hitStop ? ' hitstop' : ''}${celebration === 'delivered' ? ' delivered-shake' : ''}`}>
         <div className="track-order-code tabular">#{order.id.slice(-6).toUpperCase()}</div>
         <p className="page-sub" style={{ marginBottom: 16 }}>
           {order.merchant_name || 'On its way to you'}
@@ -354,7 +395,7 @@ export default function Track() {
               Your rider is at your gate
             </div>
           ) : (
-            <div className="track-hero-window">
+            <div className={`track-hero-window${strikeIn ? ' strike-in' : ''}`}>
               Arrives {formatFromMinutes(lowMinutesDisplay)}
               <span className="to">to</span>
               {formatFromMinutes(highMinutesDisplay)}
@@ -362,11 +403,15 @@ export default function Track() {
           )}
 
           {/* 2. Three plain checkpoints, under the hero. */}
-          <HeroCheckpoints status={order.status} burstIndex={celebration === 'collected' ? 1 : null} />
+          <HeroCheckpoints
+            status={order.status}
+            burstIndex={celebration === 'assigned' ? 0 : celebration === 'collected' ? 1 : null}
+          />
         </div>
 
-        {/* 3. Delivery point card. */}
-        <div className="card pulse-enter" style={{ marginBottom: 16, '--pulse-delay': '0ms' } as CSSProperties}>
+        {/* 3. Delivery point card. Physical card: the 300ms spring
+            (.pulse-enter-card), not the page's default 450ms. */}
+        <div className="card pulse-enter-card" style={{ marginBottom: 16, '--pulse-delay': '0ms' } as CSSProperties}>
           <div className="section-label" style={{ marginBottom: 12 }}>
             Delivery point
           </div>
@@ -420,8 +465,8 @@ export default function Track() {
           )}
         </div>
 
-        {/* 4. Rider card. */}
-        <div className="card pulse-enter" style={{ marginBottom: 16, '--pulse-delay': '60ms' } as CSSProperties}>
+        {/* 4. Rider card. Physical card: the 300ms spring (.pulse-enter-card). */}
+        <div className="card pulse-enter-card" style={{ marginBottom: 16, '--pulse-delay': '60ms' } as CSSProperties}>
           <div className="section-label" style={{ marginBottom: 12 }}>
             Your rider
           </div>
@@ -448,10 +493,12 @@ export default function Track() {
           {order.courier && <div className="rider-tel tabular">{DEMO_RIDER_TEL_LABEL}</div>}
         </div>
 
-        {/* 5. Map, demoted behind a toggle, collapsed by default. */}
+        {/* 5. Map, demoted behind a toggle, collapsed by default. Ambient
+            orange radar glow (.map-toggle-radar) invites the tap while the
+            map is still closed, stops once it is open. */}
         <button
           type="button"
-          className="btn btn-ghost btn-block map-toggle-btn pulse-enter"
+          className={`btn btn-ghost btn-block map-toggle-btn pulse-enter${!mapOpen ? ' map-toggle-radar' : ''}`}
           style={{ '--pulse-delay': '120ms' } as CSSProperties}
           onClick={() => setMapOpen((o) => !o)}
         >

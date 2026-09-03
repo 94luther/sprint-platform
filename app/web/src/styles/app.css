@@ -966,7 +966,11 @@ a {
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  transition: all 0.2s ease;
+  /* Craft director's amendment: status transitions lock in on a heavy,
+     deliberate 400ms curve, not a linear/ease tween, so "done"/"current"
+     reads as a settled fact rather than a soft fade. Falls back to the
+     literal values if pulse.css has not loaded yet. */
+  transition: all var(--dur-status-lock, 400ms) var(--ease-status-lock, cubic-bezier(0.25, 1, 0.5, 1));
 }
 
 .timeline-dot.done {

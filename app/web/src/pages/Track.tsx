@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useParams } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import GaboroneMap from '../components/GaboroneMap'
 import StatusTimeline, { HeroCheckpoints, timeLabel } from '../components/StatusTimeline'
+import { useCountUpOnce } from '../hooks/useCountUp'
 import { getOrder } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { loadDeliveryAddress, saveDeliveryAddress } from '../lib/deliveryAddress'
 import { getSocket } from '../lib/socket'
-import type { Order, OrderStatusEvent, PaymentMethod } from '../lib/types'
+import type { Order, OrderStatus, OrderStatusEvent, PaymentMethod } from '../lib/types'
 import '../styles/eta.css'
 
 const PAYMENT_LABEL: Record<PaymentMethod, string> = {
@@ -63,10 +64,74 @@ function computeArrivalWindow(order: Order): { low: Date; high: Date } {
   }
 }
 
-function formatClock(d: Date): string {
-  const hh = String(d.getHours()).padStart(2, '0')
-  const mm = String(d.getMinutes()).padStart(2, '0')
+// Minutes-since-midnight in and out, so the arrival window's rolling
+// digits (see useCountUpOnce below) can animate through real intermediate
+// clock times rather than an abstract 0 to N counter.
+function toMinutesOfDay(d: Date): number {
+  return d.getHours() * 60 + d.getMinutes()
+}
+
+function formatFromMinutes(total: number): string {
+  const m = ((Math.round(total) % 1440) + 1440) % 1440
+  const hh = String(Math.floor(m / 60)).padStart(2, '0')
+  const mm = String(m % 60).padStart(2, '0')
   return `${hh}:${mm}`
+}
+
+// Fixed, deterministic spread for particle bursts. Not Math.random: this
+// app never lets a decorative reflow show a different result on a second
+// render of the same moment, so the angles are just baked in like any
+// other layout constant.
+const WAKE_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315]
+const CELEBRATION_PARTICLES: { angle: number; dist: number; color: 'green' | 'orange'; delay: number }[] = [
+  { angle: 10, dist: 90, color: 'green', delay: 0 },
+  { angle: 55, dist: 120, color: 'orange', delay: 30 },
+  { angle: 95, dist: 80, color: 'green', delay: 10 },
+  { angle: 140, dist: 110, color: 'orange', delay: 60 },
+  { angle: 180, dist: 95, color: 'green', delay: 20 },
+  { angle: 220, dist: 130, color: 'green', delay: 50 },
+  { angle: 260, dist: 85, color: 'orange', delay: 15 },
+  { angle: 300, dist: 115, color: 'green', delay: 40 },
+  { angle: 335, dist: 100, color: 'orange', delay: 5 },
+  { angle: 25, dist: 140, color: 'green', delay: 70 },
+  { angle: 160, dist: 75, color: 'orange', delay: 35 },
+  { angle: 245, dist: 105, color: 'green', delay: 55 }
+]
+
+// Rider-assigned wake: a small burst of dots around the rider avatar.
+function ParticleWake() {
+  return (
+    <span className="particle-burst" aria-hidden="true">
+      {WAKE_ANGLES.map((angle, i) => (
+        <span
+          key={angle}
+          className="particle-dot"
+          style={{ '--angle': `${angle}deg`, animationDelay: `${i * 12}ms` } as CSSProperties}
+        />
+      ))}
+    </span>
+  )
+}
+
+// Delivered: the big one. Green and orange particles across the hero.
+function CelebrationBurst() {
+  return (
+    <span className="particle-burst" aria-hidden="true">
+      {CELEBRATION_PARTICLES.map((p, i) => (
+        <span
+          key={i}
+          className={`celebration-particle ${p.color}`}
+          style={
+            {
+              '--angle': `${p.angle}deg`,
+              '--dist': `${p.dist}px`,
+              animationDelay: `${p.delay}ms`
+            } as CSSProperties
+          }
+        />
+      ))}
+    </span>
+  )
 }
 
 // ---------------------------------------------------------------------
@@ -148,6 +213,58 @@ export default function Track() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.id])
 
+  // Status moments: every real status change coming off the socket earns a
+  // hit-stop (a 120ms freeze-frame, see the .hitstop class) then releases
+  // into a specific celebration for that transition. Purely a reaction to
+  // order.status actually changing, never to the 2s poll re-fetching the
+  // same status.
+  const prevStatusRef = useRef<OrderStatus | null>(null)
+  const [hitStop, setHitStop] = useState(false)
+  const [celebration, setCelebration] = useState<'assigned' | 'collected' | 'delivered' | null>(null)
+  const celebrationTimers = useRef<number[]>([])
+
+  useEffect(() => {
+    if (!order) return
+    const prev = prevStatusRef.current
+    prevStatusRef.current = order.status
+    if (!prev || prev === order.status) return
+
+    let kind: 'assigned' | 'collected' | 'delivered' | null = null
+    if (order.status === 'dispatch.accepted') kind = 'assigned'
+    else if (order.status === 'picked_up') kind = 'collected'
+    else if (order.status === 'delivered') kind = 'delivered'
+    if (!kind) return
+
+    setHitStop(true)
+    const releaseAt = window.setTimeout(() => {
+      setHitStop(false)
+      setCelebration(kind)
+      const clearAt = window.setTimeout(() => setCelebration(null), 1400)
+      celebrationTimers.current.push(clearAt)
+    }, 120)
+    celebrationTimers.current.push(releaseAt)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.status])
+
+  useEffect(
+    () => () => {
+      celebrationTimers.current.forEach((id) => window.clearTimeout(id))
+    },
+    []
+  )
+
+  // Arrival window rolling digits: two independent count-ups (low bound,
+  // high bound), each in minutes-since-midnight so the animation ticks
+  // through real intermediate clock times. Called unconditionally, ahead
+  // of the loading/error early returns below, since hooks cannot be
+  // conditional; the fallback window (order null) just counts to 0 and is
+  // never rendered.
+  const countUpWindow = order ? computeArrivalWindow(order) : null
+  const lowMinutesTarget = countUpWindow ? toMinutesOfDay(countUpWindow.low) : 0
+  const highMinutesTarget = countUpWindow ? toMinutesOfDay(countUpWindow.high) : 0
+  const lowMinutesDisplay = useCountUpOnce(lowMinutesTarget)
+  const highMinutesDisplay = useCountUpOnce(highMinutesTarget)
+
   if (error) {
     return (
       <div className="app-shell">
@@ -194,7 +311,6 @@ export default function Track() {
   // object gives us for "close or arrived".
   const riderAtGate = order.status === 'picked_up'
   const deliveredAt = order.timeline.find((t) => t.status === 'delivered')?.at
-  const arrivalWindow = computeArrivalWindow(order)
   const { plot, landmark } = splitAddress(addressText)
 
   const startEditAddress = () => {
@@ -214,7 +330,7 @@ export default function Track() {
   return (
     <div className="app-shell">
       <AppHeader />
-      <main className="app-main">
+      <main className={`app-main${hitStop ? ' hitstop' : ''}`}>
         <div className="track-order-code tabular">#{order.id.slice(-6).toUpperCase()}</div>
         <p className="page-sub" style={{ marginBottom: 16 }}>
           {order.merchant_name || 'On its way to you'}
@@ -223,10 +339,15 @@ export default function Track() {
         {/* 1. Hero: calm headline plus a big arrival window (or the gate
             banner, or the delivered time). Replaces the old top of page map. */}
         <div className="track-hero">
+          <span className="hero-sweep" />
+          {celebration === 'delivered' && <CelebrationBurst />}
+
           <div className="track-hero-headline">{delivered ? 'Delivered' : 'Your order is on the way'}</div>
 
           {delivered ? (
-            <div className="track-hero-window delivered">Delivered at {timeLabel(deliveredAt)}</div>
+            <div className={`track-hero-window delivered${celebration === 'delivered' ? ' stamp-in' : ''}`}>
+              Delivered at {timeLabel(deliveredAt)}
+            </div>
           ) : riderAtGate ? (
             <div className="track-hero-gate-banner">
               <span className="pulse-dot" />
@@ -234,18 +355,18 @@ export default function Track() {
             </div>
           ) : (
             <div className="track-hero-window">
-              Arrives {formatClock(arrivalWindow.low)}
+              Arrives {formatFromMinutes(lowMinutesDisplay)}
               <span className="to">to</span>
-              {formatClock(arrivalWindow.high)}
+              {formatFromMinutes(highMinutesDisplay)}
             </div>
           )}
 
           {/* 2. Three plain checkpoints, under the hero. */}
-          <HeroCheckpoints status={order.status} />
+          <HeroCheckpoints status={order.status} burstIndex={celebration === 'collected' ? 1 : null} />
         </div>
 
         {/* 3. Delivery point card. */}
-        <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card pulse-enter" style={{ marginBottom: 16, '--pulse-delay': '0ms' } as CSSProperties}>
           <div className="section-label" style={{ marginBottom: 12 }}>
             Delivery point
           </div>
@@ -300,13 +421,16 @@ export default function Track() {
         </div>
 
         {/* 4. Rider card. */}
-        <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card pulse-enter" style={{ marginBottom: 16, '--pulse-delay': '60ms' } as CSSProperties}>
           <div className="section-label" style={{ marginBottom: 12 }}>
             Your rider
           </div>
           {order.courier ? (
-            <div className="rider-row">
-              <div className="courier-avatar rider-avatar">{order.courier.name.charAt(0)}</div>
+            <div className={`rider-row${celebration === 'assigned' ? ' rider-card-flip-in' : ''}`}>
+              <div className="rider-avatar-wrap">
+                <div className="courier-avatar rider-avatar">{order.courier.name.charAt(0)}</div>
+                {celebration === 'assigned' && <ParticleWake />}
+              </div>
               <div className="rider-info">
                 <div className="rider-name">{order.courier.name}</div>
                 <div className="tabular rider-rating">★ {order.courier.rating.toFixed(1)}</div>
@@ -327,13 +451,14 @@ export default function Track() {
         {/* 5. Map, demoted behind a toggle, collapsed by default. */}
         <button
           type="button"
-          className="btn btn-ghost btn-block map-toggle-btn"
+          className="btn btn-ghost btn-block map-toggle-btn pulse-enter"
+          style={{ '--pulse-delay': '120ms' } as CSSProperties}
           onClick={() => setMapOpen((o) => !o)}
         >
           {mapOpen ? 'Hide map' : 'See rider on map'}
         </button>
         {mapOpen && (
-          <div className="map-frame" style={{ marginTop: 12 }}>
+          <div className="map-frame pulse-enter" style={{ marginTop: 12 }}>
             <GaboroneMap
               couriers={
                 order.courier
@@ -347,14 +472,17 @@ export default function Track() {
           </div>
         )}
 
-        <div className="card" style={{ marginBottom: 16, marginTop: 16 }}>
+        <div
+          className="card pulse-enter"
+          style={{ marginBottom: 16, marginTop: 16, '--pulse-delay': '180ms' } as CSSProperties}
+        >
           <div className="section-label" style={{ marginBottom: 14 }}>
             Status
           </div>
           <StatusTimeline status={order.status} timeline={order.timeline} />
         </div>
 
-        <div className="card">
+        <div className="card pulse-enter" style={{ '--pulse-delay': '240ms' } as CSSProperties}>
           <div className="section-label" style={{ marginBottom: 8 }}>
             Payment
           </div>

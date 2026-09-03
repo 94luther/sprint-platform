@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
 import { createOrder, getCatalog, newIdempotencyKey, ApiError } from '../lib/api'
@@ -7,6 +7,11 @@ import { useCart } from '../lib/cart'
 import { saveDeliveryAddress } from '../lib/deliveryAddress'
 import { PAYMENT_METHODS, type PaymentMethod } from '../lib/types'
 import '../styles/fees.css'
+
+// Brief pause after a successful order so the button's success ripple (see
+// fees.css, .success-ripple) actually gets to play before the route
+// changes, instead of navigating out from under it.
+const SUCCESS_RIPPLE_MS = 420
 
 // Alpha placeholder pricing: a flat delivery fee and a flat percentage
 // service fee, invented so the checkout screen has something honest to show
@@ -31,6 +36,7 @@ export default function Checkout() {
   const [address, setAddress] = useState('Plot 5419, Village, Gaborone')
   const [payment, setPayment] = useState<PaymentMethod>('orange_money')
   const [placing, setPlacing] = useState(false)
+  const [justPlaced, setJustPlaced] = useState(false)
   const [error, setError] = useState('')
   const idemKey = useRef(newIdempotencyKey())
   // Guards against React StrictMode's dev-only double effect invocation,
@@ -109,8 +115,15 @@ export default function Checkout() {
       // The API never echoes the address back on GET /orders/:id, so the
       // Track page reads it from this cache instead. See lib/deliveryAddress.ts.
       saveDeliveryAddress(order.id, address)
-      cart.clear()
-      navigate(`/track/${order.id}`, { replace: true })
+      // Let the button's success ripple actually play (see fees.css,
+      // .success-ripple) before the route changes out from under it.
+      // `placing` stays true the whole time, on purpose, so the button
+      // cannot be double-tapped while this plays out.
+      setJustPlaced(true)
+      window.setTimeout(() => {
+        cart.clear()
+        navigate(`/track/${order.id}`, { replace: true })
+      }, SUCCESS_RIPPLE_MS)
     } catch (err) {
       if (err instanceof ApiError && err.code === 'AGE_GATE') {
         setError('We need your age confirmed before this order can go through.')
@@ -119,7 +132,6 @@ export default function Checkout() {
       } else {
         setError('We could not place your order. Please try again.')
       }
-    } finally {
       setPlacing(false)
     }
   }
@@ -133,7 +145,7 @@ export default function Checkout() {
         </h1>
         <p className="page-sub">{cart.merchant.name}</p>
 
-        <div className="field">
+        <div className="field pulse-enter" style={{ '--pulse-delay': '0ms' } as CSSProperties}>
           <label htmlFor="address">Delivery address</label>
           <textarea
             id="address"
@@ -146,7 +158,7 @@ export default function Checkout() {
         <div className="section-label" style={{ margin: '20px 0 12px' }}>
           Pay with
         </div>
-        <div className="pay-grid">
+        <div className="pay-grid pulse-stagger">
           {PAYMENT_METHODS.map((pm) => (
             <button
               key={pm.id}
@@ -160,7 +172,7 @@ export default function Checkout() {
           ))}
         </div>
 
-        <div className="card">
+        <div className="card pulse-enter" style={{ '--pulse-delay': '120ms' } as CSSProperties}>
           {cart.lines.map((line) => (
             <div className="summary-line" key={line.item_id}>
               <span>
@@ -197,12 +209,14 @@ export default function Checkout() {
         {error && <div className="login-error" style={{ marginTop: 16 }}>{error}</div>}
 
         <button
-          className="btn btn-primary btn-block"
+          className={`btn btn-primary btn-block place-order-btn${justPlaced ? ' success-ripple' : ''}`}
           style={{ marginTop: 20 }}
           onClick={placeOrder}
           disabled={placing || !address.trim() || belowMinimum}
         >
-          {placing ? (
+          {justPlaced ? (
+            <>Order placed <span aria-hidden="true">✓</span></>
+          ) : placing ? (
             'Placing your order…'
           ) : (
             <>

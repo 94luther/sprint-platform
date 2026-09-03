@@ -59,7 +59,16 @@ const HERO_CHECKPOINTS: { label: string; throughIndex: number }[] = [
   { label: 'Coming to you', throughIndex: ORDER_STEPS.findIndex((s) => s.status === 'delivered') }
 ]
 
-export function HeroCheckpoints({ status }: { status: OrderStatus }) {
+export function HeroCheckpoints({
+  status,
+  burstIndex = null
+}: {
+  status: OrderStatus
+  // Index (0, 1 or 2) of a checkpoint to play a one-shot radial burst ring
+  // on right now, e.g. when the live socket just reported "collected".
+  // null means no burst is playing.
+  burstIndex?: number | null
+}) {
   const fullIndex = ORDER_STEPS.findIndex((s) => s.status === status)
   const doneFlags = HERO_CHECKPOINTS.map((c) => fullIndex >= c.throughIndex)
   // The first not yet done checkpoint is the one that pulses as "current",
@@ -69,13 +78,21 @@ export function HeroCheckpoints({ status }: { status: OrderStatus }) {
 
   return (
     <div className="checkpoints">
+      {/* Ambient, decorative: a small branded rider token that patrols the
+          rail continuously, independent of real progress. Purely visual,
+          never a source of status information (that is the dots above),
+          so it is hidden from assistive tech. */}
+      <span className="rider-token" aria-hidden="true">
+        <span className="rider-token-dot" />
+      </span>
       {HERO_CHECKPOINTS.map((c, i) => {
         const done = doneFlags[i]
         const current = !done && i === firstPending
+        const bursting = burstIndex === i
         return (
           <div className="checkpoint" key={c.label}>
             {i > 0 && <div className={`checkpoint-connector${doneFlags[i - 1] ? ' done' : ''}`} />}
-            <div className={`timeline-dot${done ? ' done' : ''}${current ? ' current' : ''}`}>
+            <div className={`timeline-dot${done ? ' done' : ''}${current ? ' current' : ''}${bursting ? ' radial-burst' : ''}`}>
               {done ? <span className="check-draw">✓</span> : ''}
             </div>
             <div className={`checkpoint-label${done ? ' reached' : ''}${current ? ' active' : ''}`}>

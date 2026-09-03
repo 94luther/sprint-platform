@@ -128,7 +128,7 @@ export default function CustomerHome() {
         )}
 
         {filteredMerchants && filteredMerchants.length > 0 && (
-          <div className="merchant-grid">
+          <div className="merchant-grid pulse-stagger">
             {filteredMerchants.map((m) => (
               <Link to={`/merchant/${m.id}`} className="merchant-card" key={m.id}>
                 <div className={`merchant-card-top ${m.type}`}>

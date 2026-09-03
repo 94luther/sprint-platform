@@ -4,6 +4,7 @@ import AppHeader from '../components/AppHeader'
 import { createOrder, getCatalog, newIdempotencyKey, ApiError } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { useCart } from '../lib/cart'
+import { saveDeliveryAddress } from '../lib/deliveryAddress'
 import { PAYMENT_METHODS, type PaymentMethod } from '../lib/types'
 import '../styles/fees.css'
 
@@ -105,6 +106,9 @@ export default function Checkout() {
         address,
         age_confirmed: cart.ageConfirmed
       })
+      // The API never echoes the address back on GET /orders/:id, so the
+      // Track page reads it from this cache instead. See lib/deliveryAddress.ts.
+      saveDeliveryAddress(order.id, address)
       cart.clear()
       navigate(`/track/${order.id}`, { replace: true })
     } catch (err) {

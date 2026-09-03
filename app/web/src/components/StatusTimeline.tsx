@@ -1,18 +1,19 @@
 import { ORDER_STEPS, type OrderStatus, type TimelineEntry } from '../lib/types'
 
-interface StatusTimelineProps {
-  status: OrderStatus
-  timeline: TimelineEntry[]
-}
-
-function timeLabel(at?: string) {
+export function timeLabel(at?: string) {
   if (!at) return ''
   const d = new Date(at)
   if (Number.isNaN(d.getTime())) return at
   return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function StatusTimeline({ status, timeline }: StatusTimelineProps) {
+export default function StatusTimeline({
+  status,
+  timeline
+}: {
+  status: OrderStatus
+  timeline: TimelineEntry[]
+}) {
   const currentIndex = ORDER_STEPS.findIndex((s) => s.status === status)
   const byStatus = new Map(timeline.map((t) => [t.status, t.at]))
 
@@ -35,6 +36,50 @@ export default function StatusTimeline({ status, timeline }: StatusTimelineProps
             <div className="timeline-body">
               <div className={`label${!done && !current ? ' pending' : ''}`}>{step.label}</div>
               {at && <div className="at tabular">{timeLabel(at)}</div>}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Three "plain" checkpoints for the tracking hero: Accepted, Collected,
+// Coming to you. The six ORDER_STEPS statuses collapse onto these three by
+// threshold, not by a one to one map, since the backend has no separate
+// "collection instant" or "in transit" status of its own, only picked_up
+// covering both. Reuses the exact dot and check-draw markup and CSS classes
+// from the vertical timeline above (timeline-dot, done, current, check-draw)
+// so it reads as the same design language, only the layout is horizontal
+// and there are no per-item timestamps, since the hero's big arrival window
+// already carries the time.
+const HERO_CHECKPOINTS: { label: string; throughIndex: number }[] = [
+  { label: 'Accepted', throughIndex: ORDER_STEPS.findIndex((s) => s.status === 'dispatch.accepted') },
+  { label: 'Collected', throughIndex: ORDER_STEPS.findIndex((s) => s.status === 'picked_up') },
+  { label: 'Coming to you', throughIndex: ORDER_STEPS.findIndex((s) => s.status === 'delivered') }
+]
+
+export function HeroCheckpoints({ status }: { status: OrderStatus }) {
+  const fullIndex = ORDER_STEPS.findIndex((s) => s.status === status)
+  const doneFlags = HERO_CHECKPOINTS.map((c) => fullIndex >= c.throughIndex)
+  // The first not yet done checkpoint is the one that pulses as "current",
+  // matching the same idea as the vertical timeline's single current index,
+  // just derived from thresholds instead of a direct status lookup.
+  const firstPending = doneFlags.findIndex((d) => !d)
+
+  return (
+    <div className="checkpoints">
+      {HERO_CHECKPOINTS.map((c, i) => {
+        const done = doneFlags[i]
+        const current = !done && i === firstPending
+        return (
+          <div className="checkpoint" key={c.label}>
+            {i > 0 && <div className={`checkpoint-connector${doneFlags[i - 1] ? ' done' : ''}`} />}
+            <div className={`timeline-dot${done ? ' done' : ''}${current ? ' current' : ''}`}>
+              {done ? <span className="check-draw">✓</span> : ''}
+            </div>
+            <div className={`checkpoint-label${done ? ' reached' : ''}${current ? ' active' : ''}`}>
+              {c.label}
             </div>
           </div>
         )

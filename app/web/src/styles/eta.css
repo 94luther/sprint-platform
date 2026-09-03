@@ -13,3 +13,224 @@
 .arrive-by-delivered {
   color: var(--accent);
 }
+
+/* ---------- Track hero ---------- */
+/* Same gradient card formula as the old .eta-banner, so the hero keeps the
+   page's established "warm accent card" feel while replacing the map as
+   the top of page focal point. */
+.track-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--green) 25%, var(--bg-raised)), var(--bg-raised));
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-4);
+}
+
+.track-hero-headline {
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.track-hero-window {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 30px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.track-hero-window .to {
+  font-family: var(--font-sub);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-dim);
+  text-transform: lowercase;
+  margin: 0 8px;
+}
+
+.track-hero-window.delivered {
+  font-size: 22px;
+}
+
+.track-hero-gate-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-sub);
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: var(--radius-pill);
+  padding: 10px 18px;
+}
+
+/* Three plain checkpoints, horizontal. Reuses .timeline-dot / .check-draw
+   as is (see components/StatusTimeline.tsx, HeroCheckpoints), only this
+   layout wrapper and the connecting line between dots are new. */
+.checkpoints {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.checkpoint {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkpoint-connector {
+  position: absolute;
+  top: 10px;
+  left: -50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border-strong);
+  z-index: 0;
+}
+
+.checkpoint-connector.done {
+  background: var(--accent);
+}
+
+.checkpoint .timeline-dot {
+  position: relative;
+  z-index: 1;
+}
+
+.checkpoint-label {
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.checkpoint-label.reached {
+  color: var(--text-dim);
+}
+
+.checkpoint-label.active {
+  color: var(--accent);
+}
+
+/* ---------- Delivery point card ---------- */
+.delivery-address-plot {
+  font-family: var(--font-sub);
+  font-weight: 800;
+  font-size: 19px;
+  overflow-wrap: break-word;
+}
+
+.delivery-address-landmark {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  overflow-wrap: break-word;
+}
+
+.address-confirm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.address-confirm-question {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.address-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.address-confirmed-tick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* ---------- Rider card ---------- */
+.rider-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Page CSS is bundled ahead of app.css in this app's actual load order
+   (Track.tsx is imported eagerly by App.tsx, which main.tsx imports before
+   its own app.css line), so a same-specificity override here would lose to
+   .courier-avatar. Chaining both classes on the selector raises specificity
+   instead, which wins regardless of load order. */
+.courier-avatar.rider-avatar {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+}
+
+.rider-info {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.rider-name {
+  font-family: var(--font-sub);
+  font-weight: 700;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rider-rating {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.rider-tel {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 10px;
+}
+
+.rider-finding {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.map-toggle-btn {
+  margin-bottom: 4px;
+}

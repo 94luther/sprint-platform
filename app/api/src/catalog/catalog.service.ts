@@ -11,7 +11,20 @@ export class CatalogService {
       name: m.name,
       type: m.type,
       age_restricted: m.age_restricted,
-      items: m.items.map((i) => ({ id: i.id, name: i.name, price_bwp: i.price_bwp })),
+      heroImage: m.heroImage,
+      rating: m.rating,
+      ratingCount: m.ratingCount,
+      etaMinLow: m.etaMinLow,
+      etaMinHigh: m.etaMinHigh,
+      deliveryFee: m.deliveryFee,
+      promo: m.promo,
+      items: m.items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price_bwp: i.price_bwp,
+        photo: i.photo,
+        description: i.description,
+      })),
     }));
     return { merchants };
   }

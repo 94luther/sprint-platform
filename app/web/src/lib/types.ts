@@ -6,12 +6,14 @@ export interface AuthResult {
   name: string
 }
 
-export type MerchantType = 'food' | 'grocery' | 'vape'
+export type MerchantType = 'food' | 'grocery' | 'vape' | 'pharmacy'
 
 export interface CatalogItem {
   id: string
   name: string
   price_bwp: number
+  photo: string
+  description: string
 }
 
 export interface Merchant {
@@ -20,6 +22,13 @@ export interface Merchant {
   type: MerchantType
   age_restricted: boolean
   items: CatalogItem[]
+  heroImage: string
+  rating: number
+  ratingCount: number
+  etaMinLow: number
+  etaMinHigh: number
+  deliveryFee: number
+  promo: string | null
 }
 
 export interface CatalogResponse {

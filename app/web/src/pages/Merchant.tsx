@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import AppHeader from '../components/AppHeader'
+import SmartImage from '../components/SmartImage'
 import { getCatalog } from '../lib/api'
 import { useCart } from '../lib/cart'
 import type { Merchant as MerchantType } from '../lib/types'
@@ -8,7 +9,8 @@ import type { Merchant as MerchantType } from '../lib/types'
 const TYPE_LABEL: Record<string, string> = {
   food: 'Food',
   grocery: 'Grocery',
-  vape: 'Vape'
+  vape: 'Vape',
+  pharmacy: 'Pharmacy'
 }
 
 function AgeGate({ onConfirmed, onCancel }: { onConfirmed: () => void; onCancel: () => void }) {
@@ -171,58 +173,84 @@ export default function Merchant() {
         />
       )}
 
-      <main className="app-main" style={{ paddingBottom: cart.count > 0 ? 100 : 24 }}>
+      <main className="app-main flush" style={{ paddingBottom: cart.count > 0 ? 100 : 24 }}>
         <div className="merchant-hero">
-          <span className={`badge badge-${merchant.type}`}>{TYPE_LABEL[merchant.type]}</span>
-          <h1 className="page-title" style={{ fontSize: 30 }}>
-            {merchant.name}
-          </h1>
-          {merchant.age_restricted && (
-            <span className="badge badge-age">18+ verification required</span>
-          )}
+          <SmartImage eager src={merchant.heroImage} alt={merchant.name} />
+          <div className="merchant-hero-scrim" />
+          <div className="merchant-hero-content">
+            <span className={`badge badge-${merchant.type}`}>{TYPE_LABEL[merchant.type]}</span>
+            {merchant.age_restricted && (
+              <span className="badge badge-age" style={{ marginLeft: 8 }}>
+                18+ verification required
+              </span>
+            )}
+            <h1 className="page-title">{merchant.name}</h1>
+            <div className="merchant-hero-meta">
+              <span className="merchant-rating">
+                <span className="star" aria-hidden="true">
+                  ★
+                </span>
+                <span>{merchant.rating.toFixed(1)}</span>
+                <span className="count">({merchant.ratingCount})</span>
+              </span>
+              <span>
+                {merchant.etaMinLow}-{merchant.etaMinHigh} min
+              </span>
+              <span className="merchant-fee-badge tabular">P{merchant.deliveryFee.toFixed(2)} delivery</span>
+            </div>
+          </div>
         </div>
 
-        {showMenu && (
-          <div className="card">
-            {merchant.items.map((item) => {
-              const qty = cart.qtyFor(item.id)
-              return (
-                <div className="item-row" key={item.id}>
-                  <div className="item-info">
-                    <div className="name">{item.name}</div>
-                    <div className="price tabular">P{item.price_bwp.toFixed(2)}</div>
-                  </div>
-                  {qty === 0 ? (
-                    <button
-                      className="add-btn"
-                      onClick={() => cart.addItem(merchant, item.id, item.name, item.price_bwp)}
-                    >
-                      Add
-                    </button>
-                  ) : (
-                    <div className="qty-stepper">
-                      <button onClick={() => cart.setQty(item.id, qty - 1)} aria-label="Remove one">
-                        −
-                      </button>
-                      <span className="count tabular">{qty}</span>
-                      <button
-                        className="primary"
-                        onClick={() => cart.addItem(merchant, item.id, item.name, item.price_bwp)}
-                        aria-label="Add one more"
-                      >
-                        +
-                      </button>
+        <div className="merchant-menu-wrap">
+          {merchant.promo && <div className="merchant-promo-pill" style={{ marginBottom: 16 }}>{merchant.promo}</div>}
+
+          {showMenu && (
+            <div className="card pulse-stagger">
+              {merchant.items.map((item) => {
+                const qty = cart.qtyFor(item.id)
+                return (
+                  <div className="item-row" key={item.id}>
+                    <div className="item-info">
+                      <div className="name">{item.name}</div>
+                      <div className="desc">{item.description}</div>
+                      <div className="price tabular">P{item.price_bwp.toFixed(2)}</div>
                     </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        )}
+                    <div className="item-photo-wrap">
+                      <SmartImage src={item.photo} alt={item.name} />
+                      {qty === 0 ? (
+                        <button
+                          className="add-btn"
+                          onClick={() => cart.addItem(merchant, item.id, item.name, item.price_bwp)}
+                          aria-label={`Add ${item.name}`}
+                        >
+                          +
+                        </button>
+                      ) : (
+                        <div className="qty-stepper on-photo">
+                          <button onClick={() => cart.setQty(item.id, qty - 1)} aria-label="Remove one">
+                            −
+                          </button>
+                          <span className="count tabular">{qty}</span>
+                          <button
+                            className="primary"
+                            onClick={() => cart.addItem(merchant, item.id, item.name, item.price_bwp)}
+                            aria-label="Add one more"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </main>
 
       {cart.count > 0 && cart.merchant?.id === merchant.id && (
-        <div className="cart-fab">
+        <div className="cart-fab cart-fab-bleed">
           <button className="cart-fab-inner" onClick={() => setDrawerOpen(true)}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span className="cart-fab-count">{cart.count}</span>

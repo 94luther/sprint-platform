@@ -43,6 +43,19 @@
   --radius-md: 14px;
   --radius-lg: 22px;
   --radius-pill: 999px;
+  /* Image treatment radii, per the app-teardown spec: inset item photos sit
+     at the low end of the 8-16px band, full merchant hero art at the top. */
+  --radius-item: 12px;
+  --radius-hero: 16px;
+
+  /* Glovo-style saturated category accents. Fixed hue in both themes, same
+     as --green/--orange above; only surfaces flip between themes, category
+     identity colour does not. */
+  --cat-food: var(--green-bright);
+  --cat-grocery: #3d9bf0;
+  --cat-pharmacy: #a06bff;
+  --cat-vape: var(--orange);
+  --cat-all: #9aa0a6;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -52,6 +65,10 @@
   --space-6: 32px;
   --space-7: 48px;
   --space-8: 64px;
+
+  /* Sticky bottom tab bar height, referenced by app-main's bottom padding
+     and by the Home page's floating cart bar (see .cart-fab.above-tabbar). */
+  --tabbar-h: 64px;
 
   color-scheme: dark;
 }

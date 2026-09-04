@@ -4,7 +4,7 @@ import AppHeader from '../components/AppHeader'
 import SmartImage from '../components/SmartImage'
 import { getCatalog } from '../lib/api'
 import { useCart } from '../lib/cart'
-import type { Merchant as MerchantType } from '../lib/types'
+import { MERCHANT_STATUS_COPY, type CatalogItem, type Merchant as MerchantType } from '../lib/types'
 
 const TYPE_LABEL: Record<string, string> = {
   food: 'Food',
@@ -71,6 +71,9 @@ export default function Merchant() {
   const [error, setError] = useState('')
   const [gateOpen, setGateOpen] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // A tap that would replace a different merchant's basket parks here until
+  // the customer confirms, instead of silently wiping their cart.
+  const [pendingAdd, setPendingAdd] = useState<CatalogItem | null>(null)
   const cart = useCart()
   // Guards against React StrictMode's dev-only double effect invocation,
   // which would otherwise fetch the catalog (and demo-seed the cart) twice
@@ -159,9 +162,48 @@ export default function Merchant() {
     )
   }
 
+  const isClosed = merchant.status === 'closed'
+
+  // Adding from a different merchant with a non-empty basket asks first.
+  const requestAdd = (item: CatalogItem) => {
+    if (cart.merchant && cart.merchant.id !== merchant.id && cart.lines.length > 0) {
+      setPendingAdd(item)
+      return
+    }
+    cart.addItem(merchant, item.id, item.name, item.price_bwp)
+  }
+
   return (
     <div className="app-shell">
       <AppHeader />
+
+      {pendingAdd && (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="modal-icon">🧺</div>
+            <h2>Start a new basket?</h2>
+            <p>
+              Your basket at {cart.merchant?.name} will be cleared. One order serves one shop at a
+              time.
+            </p>
+            <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+              <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setPendingAdd(null)}>
+                Keep my basket
+              </button>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1 }}
+                onClick={() => {
+                  cart.addItem(merchant, pendingAdd.id, pendingAdd.name, pendingAdd.price_bwp)
+                  setPendingAdd(null)
+                }}
+              >
+                Start at {merchant.name}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {gateOpen && !showMenu && (
         <AgeGate
@@ -198,6 +240,9 @@ export default function Merchant() {
               </span>
               <span className="merchant-fee-badge tabular">P{merchant.deliveryFee.toFixed(2)} delivery</span>
             </div>
+            <div className={`merchant-status merchant-status-${merchant.status} on-hero`}>
+              {MERCHANT_STATUS_COPY[merchant.status]}
+            </div>
           </div>
         </div>
 
@@ -217,10 +262,14 @@ export default function Merchant() {
                     </div>
                     <div className="item-photo-wrap">
                       <SmartImage src={item.photo} alt={item.name} />
-                      {qty === 0 ? (
+                      {isClosed ? (
+                        <button className="add-btn preorder" disabled aria-label="Closed, preorder for tomorrow">
+                          ⏰
+                        </button>
+                      ) : qty === 0 ? (
                         <button
                           className="add-btn"
-                          onClick={() => cart.addItem(merchant, item.id, item.name, item.price_bwp)}
+                          onClick={() => requestAdd(item)}
                           aria-label={`Add ${item.name}`}
                         >
                           +

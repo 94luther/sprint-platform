@@ -29,6 +29,17 @@ export interface Merchant {
   etaMinHigh: number
   deliveryFee: number
   promo: string | null
+  status: MerchantStatus
+}
+
+export type MerchantStatus = 'open' | 'busy' | 'closed'
+
+// One copy string per live status, shown under the merchant name on cards
+// and on the merchant hero. Closed merchants can be browsed but not ordered.
+export const MERCHANT_STATUS_COPY: Record<MerchantStatus, string> = {
+  open: 'Open · accepting orders',
+  busy: 'Busy · next delivery in about 15 min',
+  closed: 'Closed · preorder for tomorrow'
 }
 
 export interface CatalogResponse {

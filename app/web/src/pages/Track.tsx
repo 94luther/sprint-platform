@@ -6,6 +6,7 @@ import StatusTimeline, { HeroCheckpoints, timeLabel } from '../components/Status
 import { useCountUpOnce } from '../hooks/useCountUp'
 import { getOrder } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { loadCashPlan } from '../lib/checkoutExtras'
 import { loadDeliveryAddress, saveDeliveryAddress } from '../lib/deliveryAddress'
 import { getSocket } from '../lib/socket'
 import type { Order, OrderStatus, OrderStatusEvent, PaymentMethod } from '../lib/types'
@@ -185,6 +186,11 @@ export default function Track() {
   const [draftAddress, setDraftAddress] = useState('')
 
   const [mapOpen, setMapOpen] = useState(false)
+  // "Problem with this order?" sheet: always reachable from this page, per
+  // the council's visible-failure-recovery ruling. In the demo each option
+  // acknowledges rather than opening a real support thread.
+  const [problemOpen, setProblemOpen] = useState(false)
+  const [problemAck, setProblemAck] = useState('')
 
   const refetch = () => {
     if (!auth || !orderId) return
@@ -537,6 +543,18 @@ export default function Track() {
             <span>Paid with</span>
             <span>{PAYMENT_LABEL[order.payment_method]}</span>
           </div>
+          {order.payment_method === 'cash' && (() => {
+            const plan = loadCashPlan(order.id)
+            if (!plan) return null
+            return (
+              <div className="summary-line">
+                <span>{plan.noteBwp > 0 ? `You pay with P${plan.noteBwp}` : 'You pay the exact amount'}</span>
+                <span className="tabular">
+                  {plan.noteBwp > 0 ? `Rider brings P${plan.changeBwp.toFixed(2)} change` : 'No change needed'}
+                </span>
+              </div>
+            )
+          })()}
           <div className="summary-line total">
             <span>Total</span>
             <span className="tabular">P{total.toFixed(2)}</span>
@@ -564,7 +582,55 @@ export default function Track() {
             </>
           )}
         </div>
+
+        <button
+          type="button"
+          className="btn btn-ghost btn-block"
+          style={{ marginTop: 16 }}
+          onClick={() => {
+            setProblemAck('')
+            setProblemOpen(true)
+          }}
+        >
+          Problem with this order?
+        </button>
+        {problemAck && (
+          <div className="summary-line" style={{ marginTop: 8, justifyContent: 'center' }}>
+            <span>{problemAck}</span>
+          </div>
+        )}
       </main>
+
+      {problemOpen && (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="modal-icon">🛟</div>
+            <h2>What went wrong?</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 }}>
+              {[
+                'Rider cannot find my gate',
+                'Order is late',
+                'Item missing or wrong',
+                'Message Sprint support'
+              ].map((label) => (
+                <button
+                  key={label}
+                  className="btn btn-secondary btn-block"
+                  onClick={() => {
+                    setProblemAck('Sprint support has your report. A person replies in minutes.')
+                    setProblemOpen(false)
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+              <button className="btn btn-ghost btn-block" onClick={() => setProblemOpen(false)}>
+                Never mind
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -18,6 +18,7 @@ export class CatalogService {
       etaMinHigh: m.etaMinHigh,
       deliveryFee: m.deliveryFee,
       promo: m.promo,
+      status: m.status,
       items: m.items.map((i) => ({
         id: i.id,
         name: i.name,

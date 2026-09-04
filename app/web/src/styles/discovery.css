@@ -295,3 +295,41 @@
   color: var(--text-faint);
   padding: var(--space-5) 0 var(--space-3);
 }
+
+/* Live merchant status: one line of truth under the name. Green is a glow,
+   not paint; busy is the money orange; closed goes quiet. */
+.merchant-status {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 2px 0 6px;
+}
+.merchant-status-open { color: var(--green, #37c26a); }
+.merchant-status-busy { color: var(--orange, #f7941d); }
+.merchant-status-closed { color: var(--text-faint, #8a8a8a); }
+.merchant-status.on-hero { margin-top: 8px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
+.merchant-status-closed.on-hero { color: rgba(255, 255, 255, 0.75); }
+
+/* Closed merchants keep their menu browsable, the add button waits. */
+.add-btn.preorder {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Lite mode: photos load only when asked. The placeholder stays honest
+   about being a photo slot, not broken chrome. */
+.smart-image-lite {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px;
+  color: var(--text-faint, #8a8a8a);
+  background: var(--surface-2, rgba(255, 255, 255, 0.06));
+  border: 0;
+  width: 100%;
+  cursor: pointer;
+}

@@ -14,6 +14,8 @@ export interface MerchantItemRecord {
   id: string;
   name: string;
   price_bwp: number;
+  photo: string; // /food/<name>.jpg, served from web/public/food
+  description: string;
 }
 
 export interface MerchantRecord {
@@ -24,6 +26,14 @@ export interface MerchantRecord {
   items: MerchantItemRecord[];
   lat: number; // pickup point, internal only, not part of the /catalog contract
   lng: number;
+  heroImage: string; // /food/<name>.jpg, served from web/public/food
+  rating: number;
+  ratingCount: number;
+  etaMinLow: number;
+  etaMinHigh: number;
+  deliveryFee: number; // pula, flat per-merchant demo figure
+  promo: string | null;
+  status: 'open' | 'busy' | 'closed'; // live availability shown on cards and hero
 }
 
 export interface CourierRecord {

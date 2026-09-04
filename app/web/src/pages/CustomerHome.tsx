@@ -4,7 +4,10 @@ import AppHeader from '../components/AppHeader'
 import SmartImage from '../components/SmartImage'
 import { getCatalog } from '../lib/api'
 import { useCart } from '../lib/cart'
-import type { Merchant, MerchantType } from '../lib/types'
+import { MINIMUM_ORDER_BWP } from '../lib/checkoutExtras'
+import { isLiteMode } from '../lib/liteMode'
+import { getRecentOrders, type OrderAgainEntry } from '../lib/orderAgain'
+import { MERCHANT_STATUS_COPY, type Merchant, type MerchantType } from '../lib/types'
 import '../styles/discovery.css'
 
 const TYPE_LABEL: Record<string, string> = {
@@ -58,6 +61,11 @@ export default function CustomerHome() {
   const [pressedTab, setPressedTab] = useState<string | null>(null)
   const [promoIndex, setPromoIndex] = useState(0)
   const promoRailRef = useRef<HTMLDivElement>(null)
+  // "Order again" row: read once on mount and again whenever this page
+  // regains focus (a customer bouncing back from /track after placing an
+  // order is exactly when a fresh entry needs to show up), see
+  // lib/orderAgain.ts for where it gets written.
+  const [recentOrders, setRecentOrders] = useState<OrderAgainEntry[]>(() => getRecentOrders())
 
   useEffect(() => {
     getCatalog()
@@ -65,10 +73,22 @@ export default function CustomerHome() {
       .catch(() => setError('We could not load the merchants just now. Please refresh.'))
   }, [])
 
+  useEffect(() => {
+    const onFocus = () => setRecentOrders(getRecentOrders())
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onFocus)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onFocus)
+    }
+  }, [])
+
   // Auto-cycling promo carousel, paused entirely for anyone who asked for
-  // reduced motion rather than fighting their swipe with a timed jump.
+  // reduced motion (respect the swipe) or turned on lite mode (respect the
+  // data bundle).
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (isLiteMode()) return
     const id = window.setInterval(() => {
       setPromoIndex((i) => (i + 1) % PROMO_BANNERS.length)
     }, PROMO_CYCLE_MS)
@@ -123,6 +143,51 @@ export default function CustomerHome() {
 
         {error && <div className="login-error">{error}</div>}
 
+        {recentOrders.length > 0 && (
+          <>
+            <div className="section-label" style={{ margin: '4px 0 8px' }}>
+              Order again
+            </div>
+            <div className="category-carousel" role="group" aria-label="Order again">
+              {recentOrders.map((entry) => (
+                <Link to={`/merchant/${entry.merchantId}`} className="category-chip" key={entry.merchantId}>
+                  <span
+                    className="category-chip-ring"
+                    style={{ '--cat-ring': CATEGORY_META[entry.type]?.color ?? 'var(--cat-all)' } as CSSProperties}
+                  >
+                    <SmartImage src={entry.heroImage} alt="" />
+                  </span>
+                  <span
+                    className="category-chip-label"
+                    style={{ maxWidth: 60, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  >
+                    {entry.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="discovery-bar">
+          <div className="discovery-search">
+            <label htmlFor="merchant-search" className="sr-only">
+              Search merchants and items
+            </label>
+            <span className="search-glyph" aria-hidden="true">
+              🔍
+            </span>
+            <input
+              id="merchant-search"
+              type="search"
+              className="discovery-search-input"
+              placeholder="Search a shop or an item, like seswaa or airtime"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
         {!merchants && !error && (
           <div className="merchant-grid" aria-label="Loading merchants" aria-busy="true">
             {[0, 1, 2].map((i) => (
@@ -140,23 +205,6 @@ export default function CustomerHome() {
         {merchants && (
           <>
             <div className="discovery-bar">
-              <div className="discovery-search">
-                <label htmlFor="merchant-search" className="sr-only">
-                  Search merchants and items
-                </label>
-                <span className="search-glyph" aria-hidden="true">
-                  🔍
-                </span>
-                <input
-                  id="merchant-search"
-                  type="search"
-                  className="discovery-search-input"
-                  placeholder="Search a shop or an item, like seswaa or airtime"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-              </div>
-
               <div className="category-carousel" role="group" aria-label="Filter by category">
                 <button
                   type="button"
@@ -207,7 +255,11 @@ export default function CustomerHome() {
         {filteredMerchants && filteredMerchants.length === 0 && (
           <div className="empty-state">
             <div className="glyph">🔍</div>
-            <p>Nothing matches yet. Try a different search or clear the filters.</p>
+            <p>
+              {query.trim()
+                ? `Nothing matches "${query.trim()}". Try seswaa, milk or airtime.`
+                : `No ${activeType === 'all' ? '' : TYPE_LABEL[activeType] + ' '}shops here yet. More are joining Sprint every week.`}
+            </p>
             <button className="btn btn-secondary" onClick={clearFilters}>
               Clear filters
             </button>
@@ -226,12 +278,16 @@ export default function CustomerHome() {
                 </div>
                 <div className="merchant-card-body">
                   <div className="merchant-name">{m.name}</div>
+                  <div className={`merchant-status merchant-status-${m.status}`}>
+                    {MERCHANT_STATUS_COPY[m.status]}
+                  </div>
                   <div className="merchant-meta">
                     <StarRating rating={m.rating} count={m.ratingCount} />
                     <span>
                       {m.etaMinLow}-{m.etaMinHigh} min
                     </span>
                     <span className="merchant-fee-badge tabular">P{m.deliveryFee.toFixed(2)} delivery</span>
+                    <span className="tabular">Min P{MINIMUM_ORDER_BWP}</span>
                   </div>
                   {m.promo && <div className="merchant-promo-pill">{m.promo}</div>}
                 </div>

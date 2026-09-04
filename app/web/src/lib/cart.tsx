@@ -1,5 +1,23 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Merchant } from './types'
+
+// A dropped connection or an accidental reload at 18:00 should not cost the
+// customer their basket, so the cart mirrors itself into localStorage.
+// Guarded try/catch throughout: private windows and blocked site data must
+// degrade to a plain in-memory cart, never crash the app.
+const CART_STORAGE_KEY = 'sprint-cart-v1'
+
+function loadStoredCart(): CartState | null {
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as CartState
+    if (!parsed || !Array.isArray(parsed.lines)) return null
+    return { merchant: parsed.merchant ?? null, lines: parsed.lines, ageConfirmed: false }
+  } catch {
+    return null
+  }
+}
 
 export interface CartLine {
   item_id: string
@@ -30,7 +48,16 @@ const CartContext = createContext<CartContextValue | undefined>(undefined)
 const empty: CartState = { merchant: null, lines: [], ageConfirmed: false }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<CartState>(empty)
+  const [state, setState] = useState<CartState>(() => loadStoredCart() ?? empty)
+
+  useEffect(() => {
+    try {
+      if (state.lines.length === 0) localStorage.removeItem(CART_STORAGE_KEY)
+      else localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state))
+    } catch {
+      // Storage unavailable: the cart simply stays in memory.
+    }
+  }, [state])
 
   const addItem = (merchant: Merchant, item_id: string, name: string, price_bwp: number) => {
     setState((prev) => {

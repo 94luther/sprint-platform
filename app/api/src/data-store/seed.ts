@@ -25,6 +25,7 @@ export function buildSeed(): StoreShape {
       etaMinHigh: 40,
       deliveryFee: 12,
       promo: '20% off, up to P30',
+      status: 'open',
       items: [
         {
           id: 'm1-i1',
@@ -78,12 +79,13 @@ export function buildSeed(): StoreShape {
       lat: WAYPOINTS[2].lat - 0.003,
       lng: WAYPOINTS[2].lng + 0.002,
       heroImage: '/food/grocery.jpg',
-      rating: 4.4,
-      ratingCount: 158,
+      rating: 3.9,
+      ratingCount: 41,
       etaMinLow: 30,
       etaMinHigh: 50,
       deliveryFee: 15,
       promo: null,
+      status: 'busy',
       items: [
         {
           id: 'm2-i1',
@@ -143,6 +145,7 @@ export function buildSeed(): StoreShape {
       etaMinHigh: 45,
       deliveryFee: 18,
       promo: null,
+      status: 'closed',
       items: [
         {
           id: 'm3-i1',
@@ -155,28 +158,28 @@ export function buildSeed(): StoreShape {
           id: 'm3-i2',
           name: 'Disposable Vape 5000 Puffs',
           price_bwp: 250,
-          photo: '/food/market.jpg',
+          photo: '/food/grocery.jpg',
           description: 'Disposable vape device, approximately 5000 puffs.',
         },
         {
           id: 'm3-i3',
           name: 'Vape Juice 30ml',
           price_bwp: 120,
-          photo: '/food/market.jpg',
+          photo: '/food/veg.jpg',
           description: 'E-liquid refill bottle, 30ml.',
         },
         {
           id: 'm3-i4',
           name: 'Replacement Coils 5 Pack',
           price_bwp: 90,
-          photo: '/food/market.jpg',
+          photo: '/food/bread2.jpg',
           description: 'Pack of 5 replacement coils.',
         },
         {
           id: 'm3-i5',
           name: 'Starter Kit',
           price_bwp: 350,
-          photo: '/food/market.jpg',
+          photo: '/food/beans.jpg',
           description: 'Complete starter kit with device and charger.',
         },
       ],
@@ -195,6 +198,7 @@ export function buildSeed(): StoreShape {
       etaMinHigh: 30,
       deliveryFee: 10,
       promo: 'Free delivery on your first order',
+      status: 'open',
       items: [
         {
           id: 'm4-i1',
@@ -236,6 +240,10 @@ export function buildSeed(): StoreShape {
   ];
 
   const courierNames = ['Kabelo', 'Tumi', 'Ofentse', 'Naledi', 'Thato'];
+  // Fixed ratings and earnings: randomizing these on every reseed made the
+  // demo data look synthetic (every courier 4.5+, different each restart).
+  const courierRatings = [4.9, 4.6, 4.8, 4.3, 4.7];
+  const courierEarnings = [86, 42, 110, 23, 67];
   const couriers: CourierRecord[] = courierNames.map((name, i) => {
     const wp = WAYPOINTS[i % WAYPOINTS.length];
     return {
@@ -244,8 +252,8 @@ export function buildSeed(): StoreShape {
       status: 'online',
       lat: wp.lat,
       lng: wp.lng,
-      rating: Math.round((4.5 + Math.random() * 0.45) * 10) / 10,
-      earnings_today_bwp: Math.round(Math.random() * 120),
+      rating: courierRatings[i],
+      earnings_today_bwp: courierEarnings[i],
       waypoint_target: (i + 1) % WAYPOINTS.length,
       move_target: null,
     };

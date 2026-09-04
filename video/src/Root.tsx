@@ -10,6 +10,7 @@ import { SPRINT_CONCEPT_DURATION, SprintConcept } from "./sprint/SprintConcept";
 import { SPRINT_CONCEPT_V2_DURATION, SprintConceptV2 } from "./sprint/SprintConceptV2";
 import { SPRINT_CONCEPT_V3_DURATION, SprintConceptV3 } from "./sprint/SprintConceptV3";
 import { SPRINT_JOURNEY_V5_DURATION, SprintJourneyV5 } from "./sprint/SprintJourneyV5";
+import { SPRINT_ON_THE_GROUND_V6_DURATION, SprintOnTheGroundV6 } from "./sprint/SprintOnTheGroundV6";
 import { SPRINT_EXPLAINER_V4_DURATION, SprintExplainerV4 } from "./sprint/SprintExplainerV4";
 import { SPRINT_KEYNOTE_DURATION, SprintKeynote } from "./sprint/SprintKeynote";
 import { AD_DURATION, SprintAd } from "./sprint/ad";
@@ -189,6 +190,15 @@ export const RemotionRoot: React.FC = () => {
         id="SprintJourneyV5"
         component={SprintJourneyV5}
         durationInFrames={SPRINT_JOURNEY_V5_DURATION}
+        fps={30}
+        width={1920}
+        height={1080}
+      />
+
+      <Composition
+        id="SprintOnTheGroundV6"
+        component={SprintOnTheGroundV6}
+        durationInFrames={SPRINT_ON_THE_GROUND_V6_DURATION}
         fps={30}
         width={1920}
         height={1080}
